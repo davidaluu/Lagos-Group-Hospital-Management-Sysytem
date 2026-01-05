@@ -12,8 +12,6 @@
 *{box-sizing:border-box;margin:0;padding:0;font-family:Inter,Arial,sans-serif}
 html,body{height:100%}
 body{display:flex;flex-direction:column;min-height:100vh;background:var(--bg);color:var(--text)}
-
-/* header / nav */
 header{display:flex;justify-content:space-between;align-items:center;padding:16px 24px;background:#fff;border-bottom:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,.05)}
 header h1{font-size:22px;color:var(--primary)}
 .actions{display:flex;gap:12px}
@@ -23,31 +21,23 @@ button{padding:10px 16px;border-radius:12px;border:none;font-weight:600;cursor:p
 nav{display:flex;gap:24px;padding:12px 24px;background:#fff;border-bottom:1px solid var(--border)}
 nav a{text-decoration:none;color:var(--text);font-weight:600;cursor:pointer}
 nav a.active{color:var(--primary)}
-
-/* full-width section card (spans entire viewport width) */
 .card.full {
   width:100%;
   background:var(--panel);
-  padding:28px 0;       /* vertical padding; inner content gets horizontal padding via .inner */
+  padding:28px 0;
   border-radius:0;
   box-shadow:none;
 }
-
-/* centered inner container inside each full card */
 .inner {
   max-width:1600px;
   margin:0 auto;
   padding:0 24px;
 }
-
-/* normal card style for inner blocks when needed */
 .card-inner {
   background:transparent;
   border-radius:18px;
-  padding:0; /* inner sections use their own spacing */
+  padding:0;
 }
-
-/* small panels used inside */
 .panel {
   background:var(--panel);
   border-radius:14px;
@@ -55,8 +45,6 @@ nav a.active{color:var(--primary)}
   box-shadow:0 8px 20px rgba(0,0,0,.04);
   margin-bottom:18px;
 }
-
-/* inputs and lists */
 .search{margin-bottom:14px;padding:12px;border-radius:12px;border:1px solid var(--border);width:100%}
 input,select,textarea{width:100%;padding:12px;border-radius:12px;border:1px solid #cbd5e1;margin-top:8px}
 input:focus,select:focus,textarea:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px rgba(20,184,166,.12)}
@@ -67,25 +55,15 @@ textarea{resize:vertical}
 .row-actions button{margin-left:6px}
 .table{width:100%;border-collapse:collapse;font-size:14px}
 .table th,.table td{padding:10px;border-bottom:1px solid var(--border);text-align:left}
-
-/* modal */
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:1000}
 .modal-content{background:#fff;border-radius:18px;padding:28px;width:640px;max-width:95vw;max-height:90vh;overflow:auto}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .form-grid .full{grid-column:1/-1}
-
-/* metrics */
 .metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:18px;margin-bottom:20px}
 .metric{background:#f0fdf4;border-left:6px solid var(--accent);padding:14px;border-radius:12px}
 .metric span{display:block;font-size:22px;font-weight:700;color:var(--primary)}
-
-/* hidden */
 .hidden{display:none}
-
-/* footer pinned to bottom */
 footer{margin-top:auto;background:#fff;text-align:center;padding:16px;color:#64748b;border-top:1px solid var(--border);font-weight:600}
-
-/* small responsive tweaks */
 @media (max-width:800px){
   .form-grid{grid-template-columns:1fr}
 }
@@ -93,11 +71,22 @@ footer{margin-top:auto;background:#fff;text-align:center;padding:16px;color:#647
 </head>
 <body>
 
+<div id="authOverlay" style="position:fixed;inset:0;background:#f4f6fb;display:flex;align-items:center;justify-content:center;z-index:3000">
+  <div style="background:#fff;padding:32px;border-radius:18px;width:360px;box-shadow:0 20px 40px rgba(0,0,0,.2)">
+    <h2 style="margin-bottom:12px">Hospital Login</h2>
+    <input id="authUser" placeholder="Username">
+    <input id="authPass" type="password" placeholder="Password" style="margin-top:10px">
+    <button class="btn-primary" style="width:100%;margin-top:16px" onclick="login()">Login</button>
+    <p id="authError" style="color:red;margin-top:10px"></p>
+  </div>
+</div>
+
 <header>
   <h1>Hospital Management System</h1>
   <div class="actions">
     <button class="btn-outline" onclick="openPatientForm()">+ New Patient</button>
     <button class="btn-primary" onclick="openAppointmentForm()">Book Appointment</button>
+    <button class="btn-outline" onclick="logout()">Logout</button>
   </div>
 </header>
 
@@ -108,7 +97,6 @@ footer{margin-top:auto;background:#fff;text-align:center;padding:16px;color:#647
   <a onclick="switchSection('doctors')">Doctors</a>
 </nav>
 
-<!-- OVERVIEW - full-width card -->
 <section id="overviewSection" class="card full">
   <div class="inner">
     <div class="panel">
@@ -117,7 +105,6 @@ footer{margin-top:auto;background:#fff;text-align:center;padding:16px;color:#647
         <div class="metric"><div>Total Appointments</div><span id="mAppointments">0</span></div>
         <div class="metric"><div>Doctors</div><span id="mDoctors">0</span></div>
       </div>
-
       <h3 style="margin-top:6px;">Recent Patients</h3>
       <input class="search" id="searchInput" placeholder="Search by name, phone, or ID" oninput="renderPatients('overview')" />
       <div class="list" id="patientList"></div>
@@ -125,7 +112,6 @@ footer{margin-top:auto;background:#fff;text-align:center;padding:16px;color:#647
   </div>
 </section>
 
-<!-- PATIENTS - full-width card -->
 <section id="patientsSection" class="card full hidden">
   <div class="inner">
     <div class="panel">
@@ -136,7 +122,6 @@ footer{margin-top:auto;background:#fff;text-align:center;padding:16px;color:#647
   </div>
 </section>
 
-<!-- APPOINTMENTS - full-width card -->
 <section id="appointmentsSection" class="card full hidden">
   <div class="inner">
     <div class="panel">
@@ -149,7 +134,6 @@ footer{margin-top:auto;background:#fff;text-align:center;padding:16px;color:#647
   </div>
 </section>
 
-<!-- DOCTORS - full-width card (with add/delete) -->
 <section id="doctorsSection" class="card full hidden">
   <div class="inner">
     <div class="panel">
@@ -166,7 +150,6 @@ footer{margin-top:auto;background:#fff;text-align:center;padding:16px;color:#647
   </div>
 </section>
 
-<!-- Patient Modal -->
 <div class="modal" id="patientModal">
   <div class="modal-content">
     <h3 id="pmTitle">New Patient</h3>
@@ -191,7 +174,6 @@ footer{margin-top:auto;background:#fff;text-align:center;padding:16px;color:#647
   </div>
 </div>
 
-<!-- Appointment Modal -->
 <div class="modal" id="appointmentModal">
   <div class="modal-content">
     <h3>Book Appointment</h3>
@@ -208,7 +190,28 @@ footer{margin-top:auto;background:#fff;text-align:center;padding:16px;color:#647
 <footer>© Lagos Group 2026</footer>
 
 <script>
-/* DB init (patients, appointments, doctors) */
+const AUTH_KEY = 'hms_auth'
+if (!localStorage.getItem('hms_user')) {
+  localStorage.setItem('hms_user', JSON.stringify({ username: 'admin', password: 'admin123' }))
+}
+function login(){
+  const u = document.getElementById('authUser').value.trim()
+  const p = document.getElementById('authPass').value.trim()
+  const s = JSON.parse(localStorage.getItem('hms_user'))
+  if (u === s.username && p === s.password) {
+    localStorage.setItem(AUTH_KEY, 'true')
+    document.getElementById('authOverlay').style.display = 'none'
+  } else {
+    document.getElementById('authError').textContent = 'Invalid login details'
+  }
+}
+function logout(){
+  localStorage.removeItem(AUTH_KEY)
+  location.reload()
+}
+if (localStorage.getItem(AUTH_KEY) === 'true') {
+  document.getElementById('authOverlay').style.display = 'none'
+}
 const db = {
   patients: JSON.parse(localStorage.getItem('patients')||'[]'),
   appointments: JSON.parse(localStorage.getItem('appointments')||'[]'),
@@ -223,17 +226,13 @@ if (!db.doctors || !Array.isArray(db.doctors)) {
   ]
   localStorage.setItem('doctors', JSON.stringify(db.doctors))
 }
-
 let editingPatient = null
-
 function persist(){
   localStorage.setItem('patients', JSON.stringify(db.patients))
   localStorage.setItem('appointments', JSON.stringify(db.appointments))
   localStorage.setItem('doctors', JSON.stringify(db.doctors))
 }
 function genId(){ return Math.floor(100000+Math.random()*900000) }
-
-/* Section switching */
 function switchSection(section){
   document.querySelectorAll('.card.full').forEach(c=>c.classList.add('hidden'))
   document.getElementById(section+'Section').classList.remove('hidden')
@@ -243,54 +242,47 @@ function switchSection(section){
   if(section==='appointments') renderAppointments()
   if(section==='doctors') renderDoctors()
 }
-
-/* Patient form/modal */
 function openPatientForm(p){
   editingPatient = p || null
-  pmTitle.textContent = p ? 'Edit Patient' : 'New Patient'
-  pName.value = p?.name || ''
-  pPhone.value = p?.phone || ''
-  pGender.value = p?.gender || ''
-  pBlood.value = p?.blood || ''
-  pAge.value = p?.age || ''
-  pHeight.value = p?.height || ''
-  pWeight.value = p?.weight || ''
-  pNote.value = p?.note || ''
+  document.getElementById('pmTitle').textContent = p ? 'Edit Patient' : 'New Patient'
+  document.getElementById('pName').value = p?.name || ''
+  document.getElementById('pPhone').value = p?.phone || ''
+  document.getElementById('pGender').value = p?.gender || ''
+  document.getElementById('pBlood').value = p?.blood || ''
+  document.getElementById('pAge').value = p?.age || ''
+  document.getElementById('pHeight').value = p?.height || ''
+  document.getElementById('pWeight').value = p?.weight || ''
+  document.getElementById('pNote').value = p?.note || ''
   document.getElementById('patientModal').style.display = 'flex'
 }
 function openAppointmentForm(){ renderPatientOptions(); renderDoctorOptions(); document.getElementById('appointmentModal').style.display='flex' }
 function closeModal(){ document.getElementById('patientModal').style.display = document.getElementById('appointmentModal').style.display = 'none' }
-
 function savePatient(){
-  if(!pName.value.trim()){ alert('Enter patient name'); return }
-  if(!pPhone.value.trim()){ alert('Enter phone number'); return }
-  if(!pGender.value){ alert('Select gender'); return }
-  if(!pBlood.value){ alert('Select blood group'); return }
-
+  if(!document.getElementById('pName').value.trim()){ alert('Enter patient name'); return }
+  if(!document.getElementById('pPhone').value.trim()){ alert('Enter phone number'); return }
+  if(!document.getElementById('pGender').value){ alert('Select gender'); return }
+  if(!document.getElementById('pBlood').value){ alert('Select blood group'); return }
   if(editingPatient){
     Object.assign(editingPatient, {
-      name:pName.value, phone:pPhone.value, gender:pGender.value,
-      blood:pBlood.value, age:pAge.value, height:pHeight.value,
-      weight:pWeight.value, note:pNote.value
+      name:document.getElementById('pName').value, phone:document.getElementById('pPhone').value, gender:document.getElementById('pGender').value,
+      blood:document.getElementById('pBlood').value, age:document.getElementById('pAge').value, height:document.getElementById('pHeight').value,
+      weight:document.getElementById('pWeight').value, note:document.getElementById('pNote').value
     })
   } else {
     db.patients.push({
-      id: genId(), name:pName.value, phone:pPhone.value, gender:pGender.value,
-      blood:pBlood.value, age:pAge.value, height:pHeight.value,
-      weight:pWeight.value, note:pNote.value
+      id: genId(), name:document.getElementById('pName').value, phone:document.getElementById('pPhone').value, gender:document.getElementById('pGender').value,
+      blood:document.getElementById('pBlood').value, age:document.getElementById('pAge').value, height:document.getElementById('pHeight').value,
+      weight:document.getElementById('pWeight').value, note:document.getElementById('pNote').value
     })
   }
   persist(); closeModal(); renderPatients('overview'); renderPatientOptions()
 }
-
 function deletePatient(id){
   if(!confirm('Are you sure you want to delete this patient?')) return
   db.patients = db.patients.filter(p=>p.id!==id)
   db.appointments = db.appointments.filter(a=>a.patientId!==id)
   persist(); renderPatients('overview'); renderAppointments()
 }
-
-/* Patients rendering */
 function renderPatients(section='overview'){
   const q = (section==='overview' ? (document.getElementById('searchInput')?.value||'') : (document.getElementById('searchInputPatients')?.value||'')).toLowerCase()
   const list = section==='overview' ? document.getElementById('patientList') : document.getElementById('patientListPatients')
@@ -311,8 +303,6 @@ function renderPatients(section='overview'){
     })
   document.getElementById('mPatients').textContent = db.patients.length
 }
-
-/* Doctor CRUD */
 function renderDoctors(){
   const container = document.getElementById('doctorsList'); if(!container) return
   container.innerHTML = ''
@@ -325,7 +315,6 @@ function renderDoctors(){
   document.getElementById('mDoctors').textContent = db.doctors.length
   renderDoctorOptions()
 }
-
 function addDoctor(){
   const name = (document.getElementById('newDoctorName').value || '').trim()
   if(!name){ alert('Enter doctor name'); return }
@@ -334,45 +323,36 @@ function addDoctor(){
   document.getElementById('newDoctorName').value = ''
   persist(); renderDoctors()
 }
-
 function deleteDoctor(id){
   const doc = db.doctors.find(d=>d.id===id)
   if(!doc) return
   if(!confirm(`Delete ${doc.name}? This will also remove any appointments assigned to them.`)) return
   db.doctors = db.doctors.filter(d=>d.id!==id)
-  // remove appointments that referenced this doctor by name
   db.appointments = db.appointments.filter(a=>a.doctor !== doc.name)
   persist(); renderDoctors(); renderAppointments()
 }
-
-/* doctor options for appointments (value is doctor name) */
 function renderDoctorOptions(){
   const sel = document.getElementById('aDoctor'); if(!sel) return
   sel.innerHTML = ''
   db.doctors.forEach(d => sel.innerHTML += `<option value="${escapeHtml(d.name)}">${d.name}</option>`)
 }
-
-/* Appointment CRUD */
 function renderPatientOptions(){
   const sel = document.getElementById('aPatient'); if(!sel) return
   sel.innerHTML = '<option value="">Select Patient</option>'
   db.patients.forEach(p=> sel.innerHTML += `<option value='${p.id}'>${escapeHtml(p.name)} (${p.id})</option>`)
 }
-
 function saveAppointment(){
-  if(!aPatient.value){ alert('Select a patient'); return }
-  if(!aDate.value){ alert('Select date'); return }
-  if(!aDoctor.value){ alert('Select doctor'); return }
-  db.appointments.push({ id: Date.now(), patientId: +aPatient.value, doctor: aDoctor.value, date: aDate.value })
+  if(!document.getElementById('aPatient').value){ alert('Select a patient'); return }
+  if(!document.getElementById('aDate').value){ alert('Select date'); return }
+  if(!document.getElementById('aDoctor').value){ alert('Select doctor'); return }
+  db.appointments.push({ id: Date.now(), patientId: +document.getElementById('aPatient').value, doctor: document.getElementById('aDoctor').value, date: document.getElementById('aDate').value })
   persist(); closeModal(); renderAppointments()
 }
-
 function deleteAppointment(id){
   if(!confirm('Are you sure you want to delete this appointment?')) return
   db.appointments = db.appointments.filter(a=>a.id!==id)
   persist(); renderAppointments()
 }
-
 function renderAppointments(){
   const t = document.getElementById('appointmentTable'); if(!t) return
   t.innerHTML = ''
@@ -387,15 +367,12 @@ function renderAppointments(){
   })
   document.getElementById('mAppointments').textContent = db.appointments.length
 }
-
-/* small helper to avoid injection into option text */
 function escapeHtml(str){
   return String(str).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;')
 }
-
-/* initial view */
 switchSection('overview')
 renderPatients('overview'); renderAppointments(); renderPatientOptions(); renderDoctorOptions(); renderDoctors();
 </script>
 </body>
 </html>
+
