@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Hospital Management System</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f0f4f8;
+  --panel:#ffffff;
+  --primary:#0d6efd;
+  --teal:#0d9488;
+  --secondary:#0369a1;
+  --text:#0f172a;
+  --muted:#64748b;
+  --border:#dde3ec;
+  --accent:#14b8a6;
+  --danger:#ef4444;
+  --warn:#f59e0b;
+  --success:#22c55e;
+  --radius:14px;
+  --shadow:0 2px 12px rgba(15,23,42,.07);
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'DM Sans',Arial,sans-serif}
+html,body{height:100%}
+body{display:flex;flex-direction:column;min-height:100vh;background:var(--bg);color:var(--text)}
+
+/* Auth */
+#authOverlay{position:fixed;inset:0;background:linear-gradient(135deg,#0d6efd15 0%,#0d948815 100%);display:flex;align-items:center;justify-content:center;z-index:3000;backdrop-filter:blur(2px)}
+.auth-box{background:#fff;padding:40px;border-radius:20px;width:380px;box-shadow:0 24px 60px rgba(0,0,0,.12);border:1px solid var(--border)}
+.auth-box h2{font-size:24px;font-weight:700;margin-bottom:4px;color:var(--text)}
+.auth-box p{color:var(--muted);font-size:14px;margin-bottom:24px}
+.auth-logo{display:flex;align-items:center;gap:10px;margin-bottom:20px}
+.auth-logo .logo-icon{width:40px;height:40px;background:linear-gradient(135deg,var(--secondary),var(--teal));border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px}
+
+/* Header */
+header{display:flex;justify-content:space-between;align-items:center;padding:0 28px;height:64px;background:#fff;border-bottom:1px solid var(--border);box-shadow:var(--shadow);position:sticky;top:0;z-index:100}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-mark{width:36px;height:36px;background:linear-gradient(135deg,var(--secondary),var(--teal));border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px;font-family:'DM Mono',monospace}
+.header-sub{font-size:12px;color:var(--muted);font-weight:400}
+.actions{display:flex;gap:8px;align-items:center}
+button{padding:9px 16px;border-radius:10px;border:none;font-weight:600;cursor:pointer;font-size:13.5px;font-family:'DM Sans',Arial,sans-serif}
+.btn-primary{background:linear-gradient(90deg,var(--secondary),var(--teal));color:#fff;box-shadow:0 2px 8px rgba(13,110,253,.2)}
+.btn-primary:hover{opacity:.92}
+.btn-outline{background:#fff;border:1.5px solid var(--border);color:var(--text)}
+.btn-outline:hover{background:#f8fafc}
+.btn-danger{background:#fff1f2;border:1.5px solid #fecdd3;color:var(--danger)}
+.btn-sm{padding:6px 12px;font-size:12.5px;border-radius:8px}
+
+/* Nav */
+nav{display:flex;gap:4px;padding:10px 28px;background:#fff;border-bottom:1px solid var(--border)}
+nav a{text-decoration:none;color:var(--muted);font-weight:600;cursor:pointer;padding:7px 14px;border-radius:9px;font-size:14px}
+nav a:hover{background:#f1f5f9;color:var(--text)}
+nav a.active{background:linear-gradient(90deg,#e0f2fe,#ccfbf1);color:var(--teal)}
+
+/* Sections */
+.page-section{width:100%;background:transparent;padding:28px 0}
+.inner{max-width:1600px;margin:0 auto;padding:0 28px}
+.panel{background:var(--panel);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow);margin-bottom:18px;border:1px solid var(--border)}
+.panel h3{font-size:16px;font-weight:700;margin-bottom:16px;color:var(--text)}
+
+/* Metrics */
+.metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:20px}
+.metric{background:#fff;border:1px solid var(--border);padding:18px;border-radius:var(--radius);box-shadow:var(--shadow);display:flex;flex-direction:column;gap:4px}
+.metric-label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.metric-value{font-size:28px;font-weight:700;color:var(--text);font-family:'DM Mono',monospace}
+.metric.teal .metric-value{color:var(--teal)}
+.metric.blue .metric-value{color:var(--secondary)}
+.metric.amber .metric-value{color:var(--warn)}
+
+/* Search & lists */
+.search-bar{position:relative;margin-bottom:14px}
+.search-bar input{width:100%;padding:11px 16px 11px 42px;border-radius:10px;border:1.5px solid var(--border);font-size:14px;background:#fafbfc}
+.search-bar input:focus{border-color:var(--accent);outline:none;background:#fff}
+.search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:16px;pointer-events:none}
+
+.list{max-height:580px;overflow:auto;display:flex;flex-direction:column;gap:8px}
+.patient-item{padding:16px;background:#fff;border:1px solid var(--border);border-radius:12px;display:flex;justify-content:space-between;align-items:center}
+.patient-item:hover{border-color:#a5b4fc;background:#fafeff}
+.patient-name{font-weight:700;font-size:15px;color:var(--text)}
+.patient-meta{font-size:12.5px;color:var(--muted);margin-top:3px;display:flex;gap:8px;flex-wrap:wrap}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11.5px;font-weight:600}
+.badge-blood{background:#fee2e2;color:#b91c1c}
+.badge-gender{background:#e0f2fe;color:#0369a1}
+.row-actions{display:flex;gap:6px}
+
+/* Table */
+.table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border)}
+.table{width:100%;border-collapse:collapse;font-size:13.5px}
+.table th{padding:11px 14px;background:#f8fafc;color:var(--muted);font-weight:600;text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border)}
+.table td{padding:11px 14px;border-bottom:1px solid var(--border);color:var(--text)}
+.table tr:last-child td{border-bottom:none}
+.table tr:hover td{background:#f8fafc}
+
+/* Patient Form Full Page */
+#patientFormSection{display:none;width:100%;padding:28px 0;background:var(--bg)}
+.form-page-header{display:flex;align-items:center;gap:16px;margin-bottom:24px}
+.form-page-header h2{font-size:20px;font-weight:700;color:var(--text)}
+.back-btn{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1.5px solid var(--border);color:var(--muted);padding:7px 14px;border-radius:10px;font-weight:600;font-size:13.5px;cursor:pointer}
+.back-btn:hover{background:#f1f5f9;color:var(--text)}
+.form-page-body{background:#fff;border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);padding:32px}
+
+/* Form */
+.form-section{margin-bottom:26px}
+.form-section-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--teal);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-grid .span2{grid-column:1/-1}
+.field label{display:block;font-size:12.5px;font-weight:600;color:var(--muted);margin-bottom:5px}
+.field input,.field select,.field textarea{width:100%;padding:10px 13px;border-radius:10px;border:1.5px solid var(--border);font-size:14px;font-family:'DM Sans',Arial,sans-serif;background:#fff;color:var(--text)}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px rgba(20,184,166,.1)}
+.field textarea{resize:vertical;min-height:80px}
+.phone-field{display:flex}
+.phone-prefix{padding:10px 12px;border:1.5px solid var(--border);border-right:none;border-radius:10px 0 0 10px;background:#f8fafc;font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap;display:flex;align-items:center}
+.phone-field input{border-radius:0 10px 10px 0}
+
+/* Highlight selects */
+.highlight-select{font-weight:700}
+select.blood-A-pos{background:#fff0f0;border-color:#f87171;color:#b91c1c}
+select.blood-A-neg{background:#fff0f0;border-color:#f87171;color:#b91c1c}
+select.blood-B-pos{background:#fff5f0;border-color:#fb923c;color:#c2410c}
+select.blood-B-neg{background:#fff5f0;border-color:#fb923c;color:#c2410c}
+select.blood-AB-pos{background:#fdf4ff;border-color:#c084fc;color:#7e22ce}
+select.blood-AB-neg{background:#fdf4ff;border-color:#c084fc;color:#7e22ce}
+select.blood-O-pos{background:#f0fdf4;border-color:#4ade80;color:#166534}
+select.blood-O-neg{background:#f0fdf4;border-color:#4ade80;color:#166534}
+
+.height-indicator{display:flex;align-items:center;gap:8px;margin-top:6px}
+.height-bar-wrap{flex:1;height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden}
+.height-bar{height:100%;background:linear-gradient(90deg,var(--secondary),var(--teal));border-radius:4px;width:0%;transition:width .3s}
+.height-label{font-size:12px;font-weight:700;color:var(--teal);font-family:'DM Mono',monospace;min-width:50px}
+
+.form-actions{display:flex;gap:10px;margin-top:28px;padding-top:20px;border-top:1px solid var(--border)}
+
+/* Appointment Modal */
+.modal{position:fixed;inset:0;background:rgba(15,23,42,.45);display:none;align-items:center;justify-content:center;z-index:1000;padding:16px;overflow-y:auto}
+.modal-content{background:#fff;border-radius:20px;padding:32px;width:480px;max-width:100%;box-shadow:0 32px 80px rgba(0,0,0,.2);position:relative}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.modal-header h3{font-size:18px;font-weight:700}
+.modal-close{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:#f1f5f9;border:none;font-size:18px;color:var(--muted)}
+.modal-close:hover{background:#e2e8f0}
+
+/* Doctor list */
+.doctor-item{display:flex;justify-content:space-between;align-items:center;background:#fff;padding:13px 16px;border-radius:10px;border:1px solid var(--border);margin-bottom:8px}
+.add-bar{display:flex;gap:10px;margin-bottom:16px}
+.add-bar input{flex:1;padding:10px 14px;border-radius:10px;border:1.5px solid var(--border);font-size:14px}
+.add-bar input:focus{border-color:var(--accent);outline:none}
+
+/* Misc */
+.hidden{display:none}
+footer{background:#fff;text-align:center;padding:14px;color:var(--muted);border-top:1px solid var(--border);font-size:13px;font-weight:600;margin-top:auto}
+.empty-state{text-align:center;padding:40px;color:var(--muted);font-size:14px}
+
+@media(max-width:800px){
+  .form-grid{grid-template-columns:1fr}
+  .form-grid .span2{grid-column:1}
+  .form-page-body{padding:20px}
+  .inner{padding:0 14px}
+}
+</style>
+</head>
+<body>
+
+<!-- Auth -->
+<div id="authOverlay">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <div class="logo-icon">⚕</div>
+      <div>
+        <div style="font-weight:700;font-size:16px">HMS Portal</div>
+        <div style="font-size:12px;color:var(--muted)">Hospital Management System</div>
+      </div>
+    </div>
+    <h2>Welcome back</h2>
+    <p>Sign in to access your dashboard</p>
+    <div class="field"><label>Username</label><input id="authUser" placeholder="admin"></div>
+    <div class="field" style="margin-top:10px"><label>Password</label><input id="authPass" type="password" placeholder="••••••••"></div>
+    <button class="btn-primary" style="width:100%;margin-top:18px;padding:12px" onclick="login()">Sign In</button>
+    <p id="authError" style="color:var(--danger);margin-top:10px;font-size:13px"></p>
+  </div>
+</div>
+
+<!-- Header -->
+<header>
+  <div class="logo">
+    <div class="logo-mark">⚕</div>
+    <div>
+      <div style="font-weight:700;font-size:16px">Hospital Management System</div>
+      <div class="header-sub" id="headerDate"></div>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn-outline" onclick="openPatientForm()">+ New Patient</button>
+    <button class="btn-primary" onclick="openAppointmentForm()">Book Appointment</button>
+    <button class="btn-outline btn-sm" onclick="logout()">Logout</button>
+  </div>
+</header>
+
+<!-- Nav -->
+<nav id="mainNav">
+  <a class="active" onclick="switchSection('overview')">Overview</a>
+  <a onclick="switchSection('patients')">Patients</a>
+  <a onclick="switchSection('appointments')">Appointments</a>
+  <a onclick="switchSection('doctors')">Doctors</a>
+</nav>
+
+<!-- Overview -->
+<section id="overviewSection" class="page-section">
+  <div class="inner">
+    <div class="metric-grid">
+      <div class="metric teal"><div class="metric-label">Total Patients</div><span class="metric-value" id="mPatients">0</span></div>
+      <div class="metric blue"><div class="metric-label">Total Appointments</div><span class="metric-value" id="mAppointments">0</span></div>
+      <div class="metric amber"><div class="metric-label">Doctors</div><span class="metric-value" id="mDoctors">0</span></div>
+    </div>
+    <div class="panel">
+      <h3>Recent Patients</h3>
+      <div class="search-bar"><span class="search-icon">🔍</span><input id="searchInput" placeholder="Search by name, phone, or ID" oninput="renderPatients('overview')"></div>
+      <div class="list" id="patientList"></div>
+    </div>
+  </div>
+</section>
+
+<!-- Patients -->
+<section id="patientsSection" class="page-section hidden">
+  <div class="inner">
+    <div class="panel">
+      <h3>All Patients</h3>
+      <div class="search-bar"><span class="search-icon">🔍</span><input id="searchInputPatients" placeholder="Search by name, phone, or ID" oninput="renderPatients('patients')"></div>
+      <div class="list" id="patientListPatients"></div>
+    </div>
+  </div>
+</section>
+
+<!-- Appointments -->
+<section id="appointmentsSection" class="page-section hidden">
+  <div class="inner">
+    <div class="panel">
+      <h3>Appointments</h3>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Patient</th><th>Doctor</th><th>Date & Time</th><th></th></tr></thead>
+          <tbody id="appointmentTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Doctors -->
+<section id="doctorsSection" class="page-section hidden">
+  <div class="inner">
+    <div class="panel">
+      <h3>Doctors</h3>
+      <div class="add-bar">
+        <input id="newDoctorName" placeholder="New doctor name (e.g. Dr. John Doe)">
+        <button class="btn-primary" onclick="addDoctor()">Add Doctor</button>
+      </div>
+      <div id="doctorsList"></div>
+      <small style="color:var(--muted);display:block;margin-top:8px;">Deleting a doctor will also remove appointments assigned to them.</small>
+    </div>
+  </div>
+</section>
+
+<!-- Patient Form — Full Page -->
+<section id="patientFormSection">
+  <div class="inner">
+    <div class="form-page-header">
+      <button class="back-btn" onclick="closePatientForm()">&#8592; Back</button>
+      <h2 id="pfTitle">New Patient Registration</h2>
+    </div>
+    <div class="form-page-body">
+
+      <!-- Personal Info -->
+      <div class="form-section">
+        <div class="form-section-title">Personal Information</div>
+        <div class="form-grid">
+          <div class="field"><label>First Name *</label><input id="pFirstName" placeholder="e.g. Chukwuemeka"></div>
+          <div class="field"><label>Surname *</label><input id="pSurname" placeholder="e.g. Okonkwo"></div>
+          <div class="field"><label>Gender *</label>
+            <select id="pGender"><option value="">Select Gender</option><option>Male</option><option>Female</option><option>Other</option></select>
+          </div>
+          <div class="field"><label>Age *</label><input id="pAge" type="number" placeholder="Years" min="0" max="150" oninput="toggleParentField()"></div>
+          <div class="field"><label>Date of Birth</label><input id="pDOB" type="date"></div>
+          <div class="field"><label>NIN (National Identification Number)</label><input id="pNIN" placeholder="11-digit NIN" maxlength="11"></div>
+          <div class="field span2"><label>Home Address *</label><input id="pAddress" placeholder="Street, City, State"></div>
+          <div class="field"><label>Email Address</label><input id="pEmail" type="email" placeholder="patient@email.com"></div>
+          <div class="field"><label>Primary Telephone *</label>
+            <div class="phone-field">
+              <div class="phone-prefix">🇳🇬 +234</div>
+              <input id="pPhone" placeholder="xxx-xxx-xxxx" oninput="formatPhone(this)">
+            </div>
+          </div>
+          <div class="field"><label>Alternate Phone</label>
+            <div class="phone-field">
+              <div class="phone-prefix">🇳🇬 +234</div>
+              <input id="pPhoneAlt" placeholder="xxx-xxx-xxxx" oninput="formatPhone(this)">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Medical Info -->
+      <div class="form-section">
+        <div class="form-section-title">Medical Information</div>
+        <div class="form-grid">
+          <div class="field"><label>Blood Group *</label>
+            <select id="pBlood" class="highlight-select" onchange="updateBloodStyle(this)">
+              <option value="">Select Blood Group</option>
+              <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+              <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Height (cm)</label>
+            <input id="pHeight" type="number" placeholder="e.g. 170" min="30" max="250" oninput="updateHeightBar(this)">
+            <div class="height-indicator">
+              <div class="height-bar-wrap"><div class="height-bar" id="heightBar"></div></div>
+              <div class="height-label" id="heightLabel">— cm</div>
+            </div>
+          </div>
+          <div class="field"><label>Weight (kg)</label><input id="pWeight" type="number" placeholder="e.g. 70"></div>
+          <div class="field"><label>Illness / Diagnosis</label><input id="pIllness" placeholder="Primary complaint or diagnosis"></div>
+          <div class="field span2"><label>Treatment</label><input id="pTreatment" placeholder="Treatment administered or planned"></div>
+          <div class="field span2"><label>Doctor Notes</label><textarea id="pNote" placeholder="Additional clinical notes..."></textarea></div>
+        </div>
+      </div>
+
+      <!-- Family / Contacts -->
+      <div class="form-section">
+        <div class="form-section-title">Family & Next of Kin</div>
+        <div class="form-grid">
+          <div class="field"><label>Spouse Name</label><input id="pSpouse" placeholder="Full name of spouse"></div>
+          <div class="field"><label>Next of Kin</label><input id="pNextOfKin" placeholder="Full name"></div>
+          <div class="field"><label>Relationship to Next of Kin</label><input id="pNextOfKinRel" placeholder="e.g. Brother, Mother"></div>
+          <div class="field"><label>Next of Kin Phone</label>
+            <div class="phone-field">
+              <div class="phone-prefix">🇳🇬 +234</div>
+              <input id="pNextOfKinPhone" placeholder="xxx-xxx-xxxx" oninput="formatPhone(this)">
+            </div>
+          </div>
+          <div class="field span2" id="parentField" style="display:none">
+            <label>Parent's Name <span style="background:#fee2e2;color:#b91c1c;font-size:11px;padding:1px 6px;border-radius:4px">Required if under 18</span></label>
+            <input id="pParent" placeholder="Full name of parent/guardian">
+          </div>
+        </div>
+      </div>
+
+      <!-- Admission & Discharge -->
+      <div class="form-section">
+        <div class="form-section-title">Admission & Discharge</div>
+        <div class="form-grid">
+          <div class="field"><label>Date & Time of Admission</label><input id="pAdmission" type="datetime-local"></div>
+          <div class="field"><label>Date & Time of Discharge</label><input id="pDischarge" type="datetime-local"></div>
+          <div class="field"><label>Admitting Nurse</label><input id="pAdmNurse" placeholder="Name of admitting nurse"></div>
+          <div class="field"><label>Admitting Physician</label>
+            <select id="pAdmPhysician"><option value="">— Select Physician —</option></select>
+          </div>
+          <div class="field"><label>Treating Physician</label>
+            <select id="pTreatPhysician"><option value="">— Select Physician —</option></select>
+          </div>
+          <div class="field"><label>Discharge Physician</label>
+            <select id="pDisPhysician"><option value="">— Select Physician —</option></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn-primary" onclick="savePatient()">Save Patient</button>
+        <button class="btn-outline" onclick="closePatientForm()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Appointment Modal -->
+<div class="modal" id="appointmentModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Book Appointment</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="field"><label>Patient</label><select id="aPatient"></select></div>
+    <div class="field" style="margin-top:12px"><label>Doctor</label><select id="aDoctor"></select></div>
+    <div class="field" style="margin-top:12px"><label>Date & Time</label><input id="aDate" type="datetime-local"></div>
+    <div class="form-actions">
+      <button class="btn-primary" onclick="saveAppointment()">Book Appointment</button>
+      <button class="btn-outline" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<footer>© Lagos Group 2026 — Hospital Management System</footer>
+
+<script>
+// Date in header
+document.getElementById('headerDate').textContent = new Date().toLocaleDateString('en-NG',{weekday:'long',year:'numeric',month:'long',day:'numeric'})
+
+// Auth
+const AUTH_KEY = 'hms_auth'
+if (!localStorage.getItem('hms_user')) {
+  localStorage.setItem('hms_user', JSON.stringify({ username: 'admin', password: 'admin123' }))
+}
+function login(){
+  const u = document.getElementById('authUser').value.trim()
+  const p = document.getElementById('authPass').value.trim()
+  const s = JSON.parse(localStorage.getItem('hms_user'))
+  if (u === s.username && p === s.password) {
+    localStorage.setItem(AUTH_KEY, 'true')
+    document.getElementById('authOverlay').style.display = 'none'
+  } else {
+    document.getElementById('authError').textContent = 'Invalid username or password'
+  }
+}
+function logout(){
+  localStorage.removeItem(AUTH_KEY)
+  location.reload()
+}
+if (localStorage.getItem(AUTH_KEY) === 'true') {
+  document.getElementById('authOverlay').style.display = 'none'
+}
+
+// DB
+const db = {
+  patients: JSON.parse(localStorage.getItem('patients')||'[]'),
+  appointments: JSON.parse(localStorage.getItem('appointments')||'[]'),
+  doctors: JSON.parse(localStorage.getItem('doctors')||'null')
+}
+if (!db.doctors || !Array.isArray(db.doctors)) {
+  db.doctors = [
+    { id: genId(), name: 'Dr. Adeyemi' },
+    { id: genId(), name: 'Dr. Okafor' },
+    { id: genId(), name: 'Dr. Balogun' },
+    { id: genId(), name: 'Dr. Musa' }
+  ]
+  localStorage.setItem('doctors', JSON.stringify(db.doctors))
+}
+let editingPatient = null
+let previousSection = 'overview'
+
+function persist(){
+  localStorage.setItem('patients', JSON.stringify(db.patients))
+  localStorage.setItem('appointments', JSON.stringify(db.appointments))
+  localStorage.setItem('doctors', JSON.stringify(db.doctors))
+}
+function genId(){ return Math.floor(100000+Math.random()*900000) }
+
+// Phone formatter
+function formatPhone(el){
+  let v = el.value.replace(/\D/g,'').slice(0,10)
+  if(v.length>6) v = v.slice(0,3)+'-'+v.slice(3,6)+'-'+v.slice(6)
+  else if(v.length>3) v = v.slice(0,3)+'-'+v.slice(3)
+  el.value = v
+}
+
+// Blood group style
+function updateBloodStyle(sel){
+  sel.className = 'highlight-select'
+  const v = sel.value
+  if(!v) return
+  const map = {'A+':'blood-A-pos','A-':'blood-A-neg','B+':'blood-B-pos','B-':'blood-B-neg','AB+':'blood-AB-pos','AB-':'blood-AB-neg','O+':'blood-O-pos','O-':'blood-O-neg'}
+  if(map[v]) sel.classList.add(map[v])
+}
+
+// Height bar
+function updateHeightBar(el){
+  const v = parseInt(el.value)||0
+  const pct = Math.min(100, Math.max(0, ((v-50)/(250-50))*100))
+  document.getElementById('heightBar').style.width = pct+'%'
+  document.getElementById('heightLabel').textContent = v > 0 ? v+' cm' : '— cm'
+  const color = v < 100 ? 'var(--warn)' : v > 230 ? 'var(--danger)' : 'var(--teal)'
+  document.getElementById('heightBar').style.background = `linear-gradient(90deg, ${color}, var(--accent))`
+}
+
+// Show parent field for under-18
+function toggleParentField(){
+  const age = parseInt(document.getElementById('pAge').value)
+  document.getElementById('parentField').style.display = (!isNaN(age) && age > 0 && age < 18) ? 'block' : 'none'
+}
+
+// Populate physician dropdowns from doctors list
+function populatePhysicianSelects(admVal, treatVal, disVal){
+  const opts = '<option value="">— Select Physician —</option>' +
+    db.doctors.map(d=>`<option value="${escapeHtml(d.name)}">${escapeHtml(d.name)}</option>`).join('')
+  ;['pAdmPhysician','pTreatPhysician','pDisPhysician'].forEach(id=>{
+    document.getElementById(id).innerHTML = opts
+  })
+  if(admVal)   document.getElementById('pAdmPhysician').value   = admVal
+  if(treatVal) document.getElementById('pTreatPhysician').value = treatVal
+  if(disVal)   document.getElementById('pDisPhysician').value   = disVal
+}
+
+// Section switching
+const DASH_SECTIONS = ['overview','patients','appointments','doctors']
+
+function switchSection(section){
+  previousSection = section
+  DASH_SECTIONS.forEach(s => document.getElementById(s+'Section').classList.add('hidden'))
+  document.getElementById('patientFormSection').style.display = 'none'
+  document.getElementById(section+'Section').classList.remove('hidden')
+  document.getElementById('mainNav').style.display = 'flex'
+  updateNavActive(section)
+  if(section==='overview'||section==='patients') renderPatients(section)
+  if(section==='appointments') renderAppointments()
+  if(section==='doctors') renderDoctors()
+}
+
+function updateNavActive(section){
+  document.querySelectorAll('nav a').forEach(a=>a.classList.remove('active'))
+  const el = document.querySelector(`nav a[onclick*="${section}"]`)
+  if(el) el.classList.add('active')
+}
+
+// Open patient form as a full page (hides nav + dashboard)
+function openPatientForm(p){
+  editingPatient = p || null
+  document.getElementById('pfTitle').textContent = p ? 'Edit Patient' : 'New Patient Registration'
+  const g = (key, def='') => p?.[key] || def
+
+  document.getElementById('pFirstName').value   = g('firstName')
+  document.getElementById('pSurname').value      = g('surname')
+  document.getElementById('pGender').value       = g('gender')
+  document.getElementById('pAge').value          = g('age')
+  document.getElementById('pDOB').value          = g('dob')
+  document.getElementById('pNIN').value          = g('nin')
+  document.getElementById('pAddress').value      = g('address')
+  document.getElementById('pEmail').value        = g('email')
+  document.getElementById('pPhone').value        = g('phone')
+  document.getElementById('pPhoneAlt').value     = g('phoneAlt')
+
+  const bld = document.getElementById('pBlood')
+  bld.value = g('blood')
+  updateBloodStyle(bld)
+
+  document.getElementById('pHeight').value       = g('height')
+  if(p?.height) updateHeightBar(document.getElementById('pHeight'))
+  document.getElementById('pWeight').value       = g('weight')
+  document.getElementById('pIllness').value      = g('illness')
+  document.getElementById('pTreatment').value    = g('treatment')
+  document.getElementById('pNote').value         = g('note')
+  document.getElementById('pSpouse').value       = g('spouse')
+  document.getElementById('pNextOfKin').value    = g('nextOfKin')
+  document.getElementById('pNextOfKinRel').value = g('nextOfKinRel')
+  document.getElementById('pNextOfKinPhone').value = g('nextOfKinPhone')
+  document.getElementById('pParent').value       = g('parent')
+  document.getElementById('pAdmission').value    = g('admission')
+  document.getElementById('pDischarge').value    = g('discharge')
+  document.getElementById('pAdmNurse').value     = g('admNurse')
+
+  populatePhysicianSelects(g('admPhysician'), g('treatPhysician'), g('disPhysician'))
+  toggleParentField()
+
+  // Hide all dashboard sections & nav, show form page
+  DASH_SECTIONS.forEach(s => document.getElementById(s+'Section').classList.add('hidden'))
+  document.getElementById('mainNav').style.display = 'none'
+  document.getElementById('patientFormSection').style.display = 'block'
+  window.scrollTo(0, 0)
+}
+
+function closePatientForm(){
+  document.getElementById('patientFormSection').style.display = 'none'
+  document.getElementById('mainNav').style.display = 'flex'
+  // Re-show whichever dashboard section was active before
+  document.getElementById(previousSection+'Section').classList.remove('hidden')
+  updateNavActive(previousSection)
+  renderPatients(previousSection === 'patients' ? 'patients' : 'overview')
+}
+
+function openAppointmentForm(){
+  renderPatientOptions()
+  renderDoctorOptions()
+  document.getElementById('appointmentModal').style.display = 'flex'
+}
+
+function closeModal(){
+  document.getElementById('appointmentModal').style.display = 'none'
+}
+
+function val(id){ return document.getElementById(id).value.trim() }
+
+function savePatient(){
+  if(!val('pFirstName')){ alert('Enter first name'); return }
+  if(!val('pSurname'))  { alert('Enter surname'); return }
+  if(!val('pGender'))   { alert('Select gender'); return }
+  if(!val('pAge'))      { alert('Enter age'); return }
+  if(!val('pAddress'))  { alert('Enter home address'); return }
+  if(!val('pPhone'))    { alert('Enter primary phone number'); return }
+  if(!val('pBlood'))    { alert('Select blood group'); return }
+
+  const age = parseInt(val('pAge'))
+  if(!isNaN(age) && age > 0 && age < 18 && !val('pParent')){
+    alert("Parent's name is required for patients under 18")
+    return
+  }
+
+  const data = {
+    firstName:val('pFirstName'), surname:val('pSurname'),
+    name: val('pFirstName')+' '+val('pSurname'),
+    gender:val('pGender'), age:val('pAge'), dob:val('pDOB'),
+    nin:val('pNIN'), address:val('pAddress'), email:val('pEmail'),
+    phone:val('pPhone'), phoneAlt:val('pPhoneAlt'),
+    blood:val('pBlood'), height:val('pHeight'), weight:val('pWeight'),
+    illness:val('pIllness'), treatment:val('pTreatment'), note:val('pNote'),
+    spouse:val('pSpouse'), nextOfKin:val('pNextOfKin'), nextOfKinRel:val('pNextOfKinRel'),
+    nextOfKinPhone:val('pNextOfKinPhone'), parent:val('pParent'),
+    admission:val('pAdmission'), discharge:val('pDischarge'),
+    admNurse:val('pAdmNurse'), admPhysician:val('pAdmPhysician'),
+    treatPhysician:val('pTreatPhysician'), disPhysician:val('pDisPhysician')
+  }
+
+  if(editingPatient){
+    Object.assign(editingPatient, data)
+  } else {
+    data.id = genId()
+    db.patients.push(data)
+  }
+  persist()
+  closePatientForm()
+  renderPatientOptions()
+  document.getElementById('mPatients').textContent = db.patients.length
+}
+
+function deletePatient(id){
+  if(!confirm('Delete this patient and their appointments?')) return
+  db.patients = db.patients.filter(p=>p.id!==id)
+  db.appointments = db.appointments.filter(a=>a.patientId!==id)
+  persist(); renderPatients('overview'); renderPatients('patients'); renderAppointments()
+  document.getElementById('mPatients').textContent = db.patients.length
+}
+
+function renderPatients(section='overview'){
+  const q = (section==='overview'
+    ? (document.getElementById('searchInput')?.value||'')
+    : (document.getElementById('searchInputPatients')?.value||'')
+  ).toLowerCase()
+  const list = section==='overview'
+    ? document.getElementById('patientList')
+    : document.getElementById('patientListPatients')
+  if(!list) return
+  const filtered = db.patients.filter(p=>`${p.name}${p.phone}${p.id}${p.email||''}`.toLowerCase().includes(q))
+  if(!filtered.length){
+    list.innerHTML = '<div class="empty-state">No patients found.</div>'
+  } else {
+    list.innerHTML = filtered.map(p=>`
+      <div class="patient-item">
+        <div style="cursor:pointer" onclick='openPatientForm(db.patients.find(x=>x.id==${p.id}))'>
+          <div class="patient-name">${escapeHtml(p.name)}</div>
+          <div class="patient-meta">
+            <span>ID: ${p.id}</span>
+            <span class="badge badge-gender">${p.gender||'-'}</span>
+            <span class="badge badge-blood">${p.blood||'-'}</span>
+            <span>${escapeHtml('+234-'+p.phone)}</span>
+            ${p.illness ? `<span style="background:#fef9c3;color:#854d0e;border-radius:20px;padding:2px 8px;font-size:11.5px;font-weight:600">${escapeHtml(p.illness)}</span>` : ''}
+          </div>
+        </div>
+        <div class="row-actions">
+          <button class="btn-sm btn-outline" onclick='event.stopPropagation();openPatientForm(db.patients.find(x=>x.id==${p.id}))'>Edit</button>
+          <button class="btn-sm btn-danger" onclick='event.stopPropagation();deletePatient(${p.id})'>Delete</button>
+        </div>
+      </div>`).join('')
+  }
+  document.getElementById('mPatients').textContent = db.patients.length
+}
+
+function renderDoctors(){
+  const container = document.getElementById('doctorsList'); if(!container) return
+  if(!db.doctors.length){
+    container.innerHTML = '<div class="empty-state">No doctors added yet.</div>'
+  } else {
+    container.innerHTML = db.doctors.map(d=>`
+      <div class="doctor-item">
+        <div style="font-weight:600">${escapeHtml(d.name)}</div>
+        <button class="btn-sm btn-danger" onclick="deleteDoctor(${d.id})">Delete</button>
+      </div>`).join('')
+  }
+  document.getElementById('mDoctors').textContent = db.doctors.length
+  renderDoctorOptions()
+}
+
+function addDoctor(){
+  const name = (document.getElementById('newDoctorName').value||'').trim()
+  if(!name){ alert('Enter doctor name'); return }
+  db.doctors.push({id:genId(), name})
+  document.getElementById('newDoctorName').value = ''
+  persist(); renderDoctors()
+}
+
+function deleteDoctor(id){
+  const doc = db.doctors.find(d=>d.id===id); if(!doc) return
+  if(!confirm(`Delete ${doc.name}? All their appointments will also be removed.`)) return
+  db.doctors = db.doctors.filter(d=>d.id!==id)
+  db.appointments = db.appointments.filter(a=>a.doctor!==doc.name)
+  persist(); renderDoctors(); renderAppointments()
+}
+
+function renderDoctorOptions(){
+  const sel = document.getElementById('aDoctor'); if(!sel) return
+  sel.innerHTML = db.doctors.map(d=>`<option value="${escapeHtml(d.name)}">${escapeHtml(d.name)}</option>`).join('')
+}
+
+function renderPatientOptions(){
+  const sel = document.getElementById('aPatient'); if(!sel) return
+  sel.innerHTML = '<option value="">— Select Patient —</option>'+
+    db.patients.map(p=>`<option value='${p.id}'>${escapeHtml(p.name)} (${p.id})</option>`).join('')
+}
+
+function saveAppointment(){
+  if(!document.getElementById('aPatient').value){ alert('Select a patient'); return }
+  if(!document.getElementById('aDate').value)   { alert('Select date and time'); return }
+  if(!document.getElementById('aDoctor').value) { alert('Select a doctor'); return }
+  db.appointments.push({
+    id: Date.now(),
+    patientId: +document.getElementById('aPatient').value,
+    doctor: document.getElementById('aDoctor').value,
+    date: document.getElementById('aDate').value
+  })
+  persist(); closeModal(); renderAppointments()
+  document.getElementById('mAppointments').textContent = db.appointments.length
+}
+
+function deleteAppointment(id){
+  if(!confirm('Delete this appointment?')) return
+  db.appointments = db.appointments.filter(a=>a.id!==id)
+  persist(); renderAppointments()
+  document.getElementById('mAppointments').textContent = db.appointments.length
+}
+
+function renderAppointments(){
+  const t = document.getElementById('appointmentTable'); if(!t) return
+  if(!db.appointments.length){
+    t.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:30px">No appointments booked.</td></tr>'
+  } else {
+    t.innerHTML = db.appointments.map(a=>{
+      const p = db.patients.find(x=>x.id==a.patientId)
+      return `<tr>
+        <td><strong>${escapeHtml(p?.name||'Unknown')}</strong></td>
+        <td>${escapeHtml(a.doctor)}</td>
+        <td>${new Date(a.date).toLocaleString('en-NG')}</td>
+        <td><button class="btn-sm btn-danger" onclick='deleteAppointment(${a.id})'>Delete</button></td>
+      </tr>`
+    }).join('')
+  }
+  document.getElementById('mAppointments').textContent = db.appointments.length
+}
+
+function escapeHtml(str){
+  return String(str||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;')
+}
+
+// Init
+switchSection('overview')
+renderPatients('overview'); renderAppointments(); renderPatientOptions(); renderDoctorOptions(); renderDoctors()
+</script>
+</body>
+</html>
+
+
